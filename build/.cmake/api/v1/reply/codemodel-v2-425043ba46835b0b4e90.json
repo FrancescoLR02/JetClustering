@@ -15,7 +15,8 @@
 					"source" : ".",
 					"targetIndexes" : 
 					[
-						0
+						0,
+						1
 					]
 				}
 			],
@@ -30,7 +31,8 @@
 					"name" : "JetClustering",
 					"targetIndexes" : 
 					[
-						0
+						0,
+						1
 					]
 				}
 			],
@@ -38,8 +40,15 @@
 			[
 				{
 					"directoryIndex" : 0,
+					"id" : "directiveCL::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-directiveCL-Debug-81685d74cdaf8181100f.json",
+					"name" : "directiveCL",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
 					"id" : "serialCL::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-serialCL-Debug-33066a014ac8592df88e.json",
+					"jsonFile" : "target-serialCL-Debug-26620d765a2501c0fcad.json",
 					"name" : "serialCL",
 					"projectIndex" : 0
 				}

@@ -3,5 +3,10 @@
   "directory": "/Users/francescolarovere/Documents/Università/PhysicsOfData/Modern Computing for Physics/JetClustering/build",
   "command": "/usr/bin/clang++ -DH5_BUILT_AS_DYNAMIC_LIB -isystem /opt/anaconda3/include -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX26.1.sdk -o CMakeFiles/serialCL.dir/serialJetClustering.cpp.o -c \"/Users/francescolarovere/Documents/Università/PhysicsOfData/Modern Computing for Physics/JetClustering/serialJetClustering.cpp\"",
   "file": "/Users/francescolarovere/Documents/Università/PhysicsOfData/Modern Computing for Physics/JetClustering/serialJetClustering.cpp"
+},
+{
+  "directory": "/Users/francescolarovere/Documents/Università/PhysicsOfData/Modern Computing for Physics/JetClustering/build",
+  "command": "/usr/bin/clang++ -DH5_BUILT_AS_DYNAMIC_LIB -I/opt/homebrew/opt/libomp/include -isystem /opt/anaconda3/include -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX26.1.sdk -Xpreprocessor -fopenmp -o CMakeFiles/directiveCL.dir/directiveJetClustering.cpp.o -c \"/Users/francescolarovere/Documents/Università/PhysicsOfData/Modern Computing for Physics/JetClustering/directiveJetClustering.cpp\"",
+  "file": "/Users/francescolarovere/Documents/Università/PhysicsOfData/Modern Computing for Physics/JetClustering/directiveJetClustering.cpp"
 }
 ]

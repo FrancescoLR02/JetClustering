@@ -129,6 +129,43 @@ serialCL/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/serialCL.dir/build.make CMakeFiles/serialCL.dir/build
 .PHONY : serialCL/fast
 
+#=============================================================================
+# Target rules for targets named directiveCL
+
+# Build rule for target.
+directiveCL: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 directiveCL
+.PHONY : directiveCL
+
+# fast build rule for target.
+directiveCL/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/directiveCL.dir/build.make CMakeFiles/directiveCL.dir/build
+.PHONY : directiveCL/fast
+
+directiveJetClustering.o: directiveJetClustering.cpp.o
+.PHONY : directiveJetClustering.o
+
+# target to build an object file
+directiveJetClustering.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/directiveCL.dir/build.make CMakeFiles/directiveCL.dir/directiveJetClustering.cpp.o
+.PHONY : directiveJetClustering.cpp.o
+
+directiveJetClustering.i: directiveJetClustering.cpp.i
+.PHONY : directiveJetClustering.i
+
+# target to preprocess a source file
+directiveJetClustering.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/directiveCL.dir/build.make CMakeFiles/directiveCL.dir/directiveJetClustering.cpp.i
+.PHONY : directiveJetClustering.cpp.i
+
+directiveJetClustering.s: directiveJetClustering.cpp.s
+.PHONY : directiveJetClustering.s
+
+# target to generate assembly for a file
+directiveJetClustering.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/directiveCL.dir/build.make CMakeFiles/directiveCL.dir/directiveJetClustering.cpp.s
+.PHONY : directiveJetClustering.cpp.s
+
 serialJetClustering.o: serialJetClustering.cpp.o
 .PHONY : serialJetClustering.o
 
@@ -161,7 +198,11 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
+	@echo "... directiveCL"
 	@echo "... serialCL"
+	@echo "... directiveJetClustering.o"
+	@echo "... directiveJetClustering.i"
+	@echo "... directiveJetClustering.s"
 	@echo "... serialJetClustering.o"
 	@echo "... serialJetClustering.i"
 	@echo "... serialJetClustering.s"
