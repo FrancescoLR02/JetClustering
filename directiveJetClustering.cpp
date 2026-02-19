@@ -8,10 +8,12 @@
 #include <chrono>
 
 const double R = 0.4;
+const int cols = 2101;
 
 
 //Structure of partice 
 struct Particle{
+   int id;
    double pT, eta, phi;
 };
 
@@ -30,10 +32,12 @@ int main() {
 
    //Read binary file
    const int numEvents = 1000;
-   const int cols = 2101;
    const size_t totElements = (size_t)numEvents * cols;
 
    std::vector<float> data(totElements);
+
+   //Preallocation of the memory for the data
+   std::vector<std::vector<Particle>> allResults(numEvents);
 
    std::ifstream inFile("data.bin", std::ios::binary);
    if(!inFile){
@@ -45,17 +49,9 @@ int main() {
    inFile.close();
 
 
-   //Save jets in memory
-   std::ofstream output("ReconstructedJet.csv");
-   if (!output.is_open()) {
-      std::cerr << "Error: Could not open CSV file for writing!" << std::endl;
-      return 1;
-   }
-   output << "EventID,pT,Eta,Phi\n";
-
-
    //Loop of collisions
-   for(int collision = 0; collision < 1000; ++collision){
+   #pragma omp parallel for
+   for(int collision = 0; collision < numEvents; ++collision){
 
       //Retrieve the correct row 
       float *ptr = &data[collision * cols];
@@ -69,7 +65,7 @@ int main() {
       for(int i = 0; i + 2 < cols; i += 3){
          if(ptr[i] == 0) break;
 
-         activeParticles.push_back({(double)ptr[i], (double)ptr[i+1], (double)ptr[i+2]});
+         activeParticles.push_back({(int)collision, (double)ptr[i], (double)ptr[i+1], (double)ptr[i+2]});
       }
 
 
@@ -153,7 +149,7 @@ int main() {
             activeParticles.erase(activeParticles.begin() + second);
             activeParticles.erase(activeParticles.begin() + first);
 
-            Particle newParticle = {pT, eta, phi};
+            Particle newParticle = {collision, pT, eta, phi};
             activeParticles.push_back(newParticle);
 
 
@@ -161,12 +157,25 @@ int main() {
 
       }
 
-      std::cout << "Event " << collision << " finished! Found " << Jet.size() << " Jets." << std::endl;
+      allResults[collision] = Jet;
 
-      for (const auto& j : Jet) {
-         output << collision << "," << j.pT << "," << j.eta << "," << j.phi << "\n";
+      //std::cout << "Event " << collision << " finished! Found " << Jet.size() << " Jets." << std::endl;
+
+   }
+
+   //Save jets in memory
+   std::ofstream output("ReconstructedJetDir.csv");
+   if (!output.is_open()) {
+      std::cerr << "Error: Could not open CSV file for writing!" << std::endl;
+      return 1;
+   }
+   output << "EventID,pT,Eta,Phi\n";
+
+   //Write the vectors in memory
+   for(int i = 0; i < numEvents; ++i){
+      for (const auto& j : allResults[i]) {
+         output << j.id << "," << j.pT << "," << j.eta << "," << j.phi << "\n";
       }
-
    }
    output.close();
    

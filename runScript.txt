@@ -1,0 +1,1 @@
+clang++ -Xpreprocessor -fopenmp -I/opt/homebrew/opt/libomp/include -L/opt/homebrew/opt/libomp/lib -lomp script.cpp -o script
