@@ -33,12 +33,13 @@ int main(int argc, char* argv[]) {
    if (argc < 2) numEvents = 1000;
    else numEvents = std::stod(argv[1]);
 
-
+   
    const int cols = 2101;
    const size_t totElements = (size_t)numEvents * cols;
-
+   
    std::vector<float> data(totElements);
-
+   
+   //Read binary file
    std::ifstream inFile("data.bin", std::ios::binary);
    if(!inFile){
       std::cerr << "Error opening the file " << std::endl;
@@ -51,6 +52,8 @@ int main(int argc, char* argv[]) {
 
    //Loop of collisions
    for(int collision = 0; collision < numEvents; ++collision){
+
+      std::cout << collision << std::endl;
 
       //Retrieve the correct row 
       float *ptr = &data[collision * cols];

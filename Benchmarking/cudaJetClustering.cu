@@ -208,8 +208,8 @@ int main(int argc, char* argv[]) {
 
    int numCollision;
    //Default value
-   if (argc < 2) numCollision = 100000;
-   else numCollision = std::stod(argv[1]);
+   if (argc < 2) numEvents = 1000;
+   else numEvents = std::stod(argv[1]);
 
 
    const int cols = 2101;
@@ -226,15 +226,6 @@ int main(int argc, char* argv[]) {
 
    inFile.read(reinterpret_cast<char*>(data.data()), totElements * sizeof(float));
    inFile.close();
-
-
-   // //Save jets in memory
-   // std::ofstream output("ReconstructedJet.csv");
-   // if (!output.is_open()) {
-   //    std::cerr << "Error: Could not open CSV file for writing!" << std::endl;
-   //    return 1;
-   // }
-   // output << "EventID,pT,Eta,Phi\n";
 
 
 
@@ -335,16 +326,7 @@ int main(int argc, char* argv[]) {
    cudaFree(dev_nPar_Jet);
 
 
-   // for(int event = 0; event < numCollision; ++event){
-   //    for(int i = 0; i < nPar_Jet[event]; ++i){
-
-   //       //Takes the jets in the vector 
-   //       int idx = (event * maxPar) + i;
-   //       output << event << "," << pT_Jet[idx] << "," << eta_Jet[idx] << "," << phi_Jet[idx] << "\n";
-   //    }
-   // }
-
-   // output.close();
+   output.close();
    
    
    return 0;

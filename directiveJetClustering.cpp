@@ -28,10 +28,14 @@ double D_ij(int i, int j, const std::vector<Particle>& activeParticle);
 double D_iB(int i, const std::vector<Particle>& activeParticle);
 
 
-int main() {
+int main(int argc, char* argv[]) {
 
-   //Read binary file
-   const int numEvents = 1000;
+   int numEvents;
+   //Default value
+   if (argc < 2) numEvents = 1000;
+   else numEvents = std::stod(argv[1]);
+
+
    const size_t totElements = (size_t)numEvents * cols;
 
    std::vector<float> data(totElements);
@@ -163,21 +167,21 @@ int main() {
 
    }
 
-   //Save jets in memory
-   std::ofstream output("ReconstructedJetDir.csv");
-   if (!output.is_open()) {
-      std::cerr << "Error: Could not open CSV file for writing!" << std::endl;
-      return 1;
-   }
-   output << "EventID,pT,Eta,Phi\n";
+   // //Save jets in memory
+   // std::ofstream output("ReconstructedJetDir.csv");
+   // if (!output.is_open()) {
+   //    std::cerr << "Error: Could not open CSV file for writing!" << std::endl;
+   //    return 1;
+   // }
+   // output << "EventID,pT,Eta,Phi\n";
 
-   //Write the vectors in memory
-   for(int i = 0; i < numEvents; ++i){
-      for (const auto& j : allResults[i]) {
-         output << j.id << "," << j.pT << "," << j.eta << "," << j.phi << "\n";
-      }
-   }
-   output.close();
+   // //Write the vectors in memory
+   // for(int i = 0; i < numEvents; ++i){
+   //    for (const auto& j : allResults[i]) {
+   //       output << j.id << "," << j.pT << "," << j.eta << "," << j.phi << "\n";
+   //    }
+   // }
+   // output.close();
    
    
    return 0;

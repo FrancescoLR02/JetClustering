@@ -8,10 +8,12 @@
 #include <chrono>
 
 const double R = 0.4;
+const int cols = 2101;
 
 
 //Structure of partice 
 struct Particle{
+   int id;
    double pT, eta, phi;
 };
 
@@ -33,11 +35,13 @@ int main(int argc, char* argv[]) {
    if (argc < 2) numEvents = 1000;
    else numEvents = std::stod(argv[1]);
 
-
-   const int cols = 2101;
+   
    const size_t totElements = (size_t)numEvents * cols;
 
    std::vector<float> data(totElements);
+
+   //Preallocation of the memory for the data
+   std::vector<std::vector<Particle>> allResults(numEvents);
 
    std::ifstream inFile("data.bin", std::ios::binary);
    if(!inFile){
@@ -50,6 +54,7 @@ int main(int argc, char* argv[]) {
 
 
    //Loop of collisions
+   #pragma omp parallel for
    for(int collision = 0; collision < numEvents; ++collision){
 
       //Retrieve the correct row 
@@ -64,7 +69,7 @@ int main(int argc, char* argv[]) {
       for(int i = 0; i + 2 < cols; i += 3){
          if(ptr[i] == 0) break;
 
-         activeParticles.push_back({(double)ptr[i], (double)ptr[i+1], (double)ptr[i+2]});
+         activeParticles.push_back({(int)collision, (double)ptr[i], (double)ptr[i+1], (double)ptr[i+2]});
       }
 
 
@@ -148,13 +153,17 @@ int main(int argc, char* argv[]) {
             activeParticles.erase(activeParticles.begin() + second);
             activeParticles.erase(activeParticles.begin() + first);
 
-            Particle newParticle = {pT, eta, phi};
+            Particle newParticle = {collision, pT, eta, phi};
             activeParticles.push_back(newParticle);
 
 
          }
 
       }
+
+      allResults[collision] = Jet;
+
+      //std::cout << "Event " << collision << " finished! Found " << Jet.size() << " Jets." << std::endl;
 
    }
    
