@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
    std::vector<float> data(totElements);
    
    //Read binary file
-   std::ifstream inFile("data.bin", std::ios::binary);
+   std::ifstream inFile("../data.bin", std::ios::binary);
    if(!inFile){
       std::cerr << "Error opening the file " << std::endl;
       return 1; 
@@ -48,6 +48,17 @@ int main(int argc, char* argv[]) {
 
    inFile.read(reinterpret_cast<char*>(data.data()), totElements * sizeof(float));
    inFile.close();
+
+
+
+
+   //Save information regarding the entire collision time
+   std::ofstream Collision("Collision.csv");
+   if (!Collision.is_open()) {
+      std::cerr << "Error: Could not open CSV file for writing!" << std::endl;
+      return 1;
+   }
+   Collision << "TotalTime,DistanceTime,MinimumTime,JetIdentificationTime\n";
 
 
    //Loop of collisions
@@ -63,6 +74,13 @@ int main(int argc, char* argv[]) {
       std::vector<Particle> Jet;
 
 
+      //Vector holding timing informations: Benchmark purposes
+      double CollisionEvent = 0;
+      double Distance = 0;
+      double Minimum = 0;
+      double JetIdentification = 0;
+
+
       //store in activeParticles each particle (pT, eta, phi)
       for(int i = 0; i + 2 < cols; i += 3){
          if(ptr[i] == 0) break;
@@ -70,8 +88,9 @@ int main(int argc, char* argv[]) {
          activeParticles.push_back({(double)ptr[i], (double)ptr[i+1], (double)ptr[i+2]});
       }
 
+      auto Istart = std::chrono::high_resolution_clock::now();
 
-      
+
       while (activeParticles.size() != 0){
          
          int numParticles = activeParticles.size();
@@ -79,6 +98,10 @@ int main(int argc, char* argv[]) {
          //Vector of structure to hold geometric information on the position
          std::vector<DistanceTag> distance_ij;
          std::vector<DistanceTag> distance_iB;
+
+         //----------------------------COMPUTING DISTANCES------------------------
+
+         auto start = std::chrono::high_resolution_clock::now();
 
          for(int i = 0; i < numParticles; ++i){
 
@@ -92,6 +115,15 @@ int main(int argc, char* argv[]) {
 
             }
          }
+
+         auto end = std::chrono::high_resolution_clock::now();
+         std::chrono::duration<double> elapsed = end - start;
+
+         Distance += elapsed.count();
+
+
+         //----------------------------FINDING THE MINIMUM------------------------
+         start = std::chrono::high_resolution_clock::now();
 
          //minimum element for both vector for particle-particle and particle-Beam
          //Defining a new operator to find the minimum value in the struct
@@ -115,6 +147,17 @@ int main(int argc, char* argv[]) {
                isJet = true;
             }
          }
+
+         end = std::chrono::high_resolution_clock::now();
+         elapsed = end - start;
+
+         Minimum += elapsed.count();
+
+
+
+         //----------------------------LOOKING FOR THE JET------------------------
+         start = std::chrono::high_resolution_clock::now();
+
 
          //if isJet is true, add to Jet structure
          if(isJet){
@@ -157,7 +200,19 @@ int main(int argc, char* argv[]) {
 
          }
 
+         end = std::chrono::high_resolution_clock::now();
+         elapsed = end - start;
+
+         JetIdentification += elapsed.count();
+
       }
+
+         auto Iend = std::chrono::high_resolution_clock::now();
+         std::chrono::duration<double> elapsed = Iend - Istart;
+
+         CollisionEvent = elapsed.count();
+
+         Collision << CollisionEvent << "," << Distance << "," << Minimum << "," << JetIdentification << "\n";
 
    }
    
