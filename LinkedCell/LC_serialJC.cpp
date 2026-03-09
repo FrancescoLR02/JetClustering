@@ -37,9 +37,17 @@ double D_iB(const Particle& p_i);
 int main(int argc, char* argv[]) {
 
    int numEvents;
+   int nColl;
+
    //Default value
-   if (argc < 2) numEvents = 1000;
-   else numEvents = std::stod(argv[1]);
+   if (argc < 3) {
+      numEvents = 1000;
+      nColl = -1;
+   }
+   else {
+      numEvents = std::stod(argv[1]);
+      nColl = std::stod(argv[2]);
+   }
 
 
    //Read input file
@@ -48,7 +56,7 @@ int main(int argc, char* argv[]) {
 
    std::vector<float> data(totElements);
 
-   std::ifstream inFile("../data.bin", std::ios::binary);
+   std::ifstream inFile("data.bin", std::ios::binary);
    if(!inFile){
       std::cerr << "Error opening the file " << std::endl;
       return 1; 
@@ -61,7 +69,7 @@ int main(int argc, char* argv[]) {
    //Loop of collisions
    for(int collision = 0; collision < numEvents; ++collision){
 
-      std::cout << collision << std::endl;
+      //std::cout << collision << std::endl;
 
       //Retrieve the correct row 
       float *ptr = &data[collision * cols];
@@ -77,6 +85,14 @@ int main(int argc, char* argv[]) {
          
          //Fill the activeparticle structure
          activeParticles.push_back({(int)i, (double)ptr[i], (double)ptr[i+1], (double)ptr[i+2], true});
+      }
+
+      //Verifying the complexity of the algorithm
+      if(nColl != -1){
+         if(activeParticles.size() > nColl){
+            activeParticles.resize(nColl);
+         }
+         else continue;
       }
 
       int activeCount = activeParticles.size();
