@@ -38,6 +38,7 @@ int main(int argc, char* argv[]) {
 
    int numEvents;
    int nColl;
+   int totalEvents = 100000;
 
    //Default value
    if (argc < 3) {
@@ -52,7 +53,7 @@ int main(int argc, char* argv[]) {
 
    //Read input file
    const int cols = 2101;
-   const size_t totElements = (size_t)numEvents * cols;
+   const size_t totElements = (size_t)totalEvents * cols;
 
    std::vector<float> data(totElements);
 
@@ -66,13 +67,21 @@ int main(int argc, char* argv[]) {
    inFile.close();
 
 
-   //Loop of collisions
-   for(int collision = 0; collision < numEvents; ++collision){
+   int maxEventsLoaded = numEvents; 
+   int eventsAnalyzed = 0;          
+   int collision = 0;          
 
+
+   //Loop of collisions
+   //for(int collision = 0; collision < numEvents; ++collision){
+   while(eventsAnalyzed < maxEventsLoaded){
+      
       //std::cout << collision << std::endl;
 
       //Retrieve the correct row 
       float *ptr = &data[collision * cols];
+
+      collision++;
 
       //Jets and Active particles vector
       std::vector<Particle> activeParticles;
@@ -230,6 +239,8 @@ int main(int argc, char* argv[]) {
          }
 
       }
+
+      eventsAnalyzed++;
 
    }
    

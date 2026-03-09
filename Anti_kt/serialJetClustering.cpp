@@ -30,6 +30,7 @@ int main(int argc, char* argv[]) {
 
    int numEvents;
    int nColl;
+   int totalEvents = 100000;
 
    //Default value
    if (argc < 3) {
@@ -43,7 +44,7 @@ int main(int argc, char* argv[]) {
 
 
    const int cols = 2101;
-   const size_t totElements = (size_t)numEvents * cols;
+   const size_t totElements = (size_t)totalEvents * cols;
 
    std::vector<float> data(totElements);
 
@@ -56,14 +57,19 @@ int main(int argc, char* argv[]) {
    inFile.read(reinterpret_cast<char*>(data.data()), totElements * sizeof(float));
    inFile.close();
 
+   int maxEventsLoaded = numEvents; 
+   int eventsAnalyzed = 0;          
+   int collision = 0; 
 
    //Loop of collisions
-   for(int collision = 0; collision < numEvents; ++collision){
-
-      //std::cout << collision << std::endl;
+   //for(int collision = 0; collision < numEvents; ++collision){
+   while(eventsAnalyzed < maxEventsLoaded){
 
       //Retrieve the correct row 
       float *ptr = &data[collision * cols];
+
+      collision++;
+
 
       //Jets and Active particles vector
       std::vector<Particle> activeParticles;
@@ -85,10 +91,10 @@ int main(int argc, char* argv[]) {
          else continue;
       }
 
-
       while (activeParticles.size() != 0){
          
          int numParticles = activeParticles.size();
+
 
          //Vector of structure to hold geometric information on the position
          std::vector<DistanceTag> distance_ij;
@@ -172,6 +178,8 @@ int main(int argc, char* argv[]) {
          }
 
       }
+
+      eventsAnalyzed++;
 
    }
    
