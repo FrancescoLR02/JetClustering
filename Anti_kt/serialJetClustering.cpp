@@ -93,8 +93,8 @@ int main(int argc, char* argv[]) {
 
       while (activeParticles.size() != 0){
          
+         //Euclidean Distance calculation
          int numParticles = activeParticles.size();
-
 
          //Vector of structure to hold geometric information on the position
          std::vector<DistanceTag> distance_ij;
@@ -117,9 +117,7 @@ int main(int argc, char* argv[]) {
          //Defining a new operator to find the minimum value in the struct
          auto pB = std::min_element(distance_iB.begin(), distance_iB.end(), 
                [](const DistanceTag& a, const DistanceTag& b) {return a.dist < b.dist;});
-
-
-               
+   
          bool isJet = false;
          auto pp = distance_ij.begin();
                

@@ -52,9 +52,9 @@ int main(int argc, char* argv[]) {
    inFile.read(reinterpret_cast<char*>(data.data()), totElements * sizeof(float));
    inFile.close();
 
-
-   //Loop of collisions
+   //add directive
    #pragma omp parallel for
+   //Loop of collisions
    for(int collision = 0; collision < numEvents; ++collision){
 
       //Retrieve the correct row 
