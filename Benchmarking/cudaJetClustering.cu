@@ -208,8 +208,8 @@ int main(int argc, char* argv[]) {
 
    int numCollision;
    //Default value
-   if (argc < 2) numEvents = 1000;
-   else numEvents = std::stod(argv[1]);
+   if (argc < 2) numCollision = 1000;
+   else numCollision = std::stod(argv[1]);
 
 
    const int cols = 2101;
@@ -293,6 +293,8 @@ int main(int argc, char* argv[]) {
    cudaMalloc((void **)&dev_phi_Jet, floatVec);
    cudaMalloc((void **)&dev_nPar_Jet, intVec);
 
+
+   auto start_H2D = std::chrono::high_resolution_clock::now();
    
    //input vector from Host to Device
    cudaMemcpy(dev_pT, pT.data(), floatVec, cudaMemcpyHostToDevice);
@@ -300,20 +302,41 @@ int main(int argc, char* argv[]) {
    cudaMemcpy(dev_phi, phi.data(), floatVec, cudaMemcpyHostToDevice);
    cudaMemcpy(dev_nPar, nPar.data(), intVec, cudaMemcpyHostToDevice);
 
+   auto stop_H2D = std::chrono::high_resolution_clock::now();
+   std::chrono::duration<double, std::milli> time_H2D = stop_H2D - start_H2D;
+
+
    //determine how many threads and block to launch
    int nBlocks = numCollision;
    int nThreadsPerBlock = THREADS_PER_BLOCK;
 
-   //Kernel
+   cudaEvent_t start_kernel, stop_kernel;
+   cudaEventCreate(&start_kernel);
+   cudaEventCreate(&stop_kernel);
 
+   cudaEventRecord(start_kernel);
+
+   //Kernel
    JetClusteringKernel<<<nBlocks, nThreadsPerBlock>>>(dev_pT, dev_eta, dev_phi, dev_nPar, 
                                                       dev_pT_Jet, dev_eta_Jet, dev_phi_Jet, dev_nPar_Jet, maxPar);
+
+
+   cudaEventRecord(stop_kernel);  
+   cudaEventSynchronize(stop_kernel);
+
+   float time_kernel_ms = 0;
+   cudaEventElapsedTime(&time_kernel_ms, start_kernel, stop_kernel);
+
+   auto start_D2H = std::chrono::high_resolution_clock::now();
 
    //Retrieve the data from Device to Host
    cudaMemcpy(pT_Jet.data(), dev_pT_Jet, floatVec, cudaMemcpyDeviceToHost);
    cudaMemcpy(eta_Jet.data(), dev_eta_Jet, floatVec, cudaMemcpyDeviceToHost);
    cudaMemcpy(phi_Jet.data(), dev_phi_Jet, floatVec, cudaMemcpyDeviceToHost);
    cudaMemcpy(nPar_Jet.data(), dev_nPar_Jet, intVec, cudaMemcpyDeviceToHost);
+
+   auto stop_D2H = std::chrono::high_resolution_clock::now();
+   std::chrono::duration<double, std::milli> time_D2H = stop_D2H - start_D2H;
 
    cudaFree(dev_pT);
    cudaFree(dev_eta);
@@ -326,7 +349,33 @@ int main(int argc, char* argv[]) {
    cudaFree(dev_nPar_Jet);
 
 
+
+
+   //std::cout << "--- BENCHMARK RESULTS (" << numCollision << " Events) ---\n";
+   // std::cout << "Host-to-Device Memcpy : " << time_H2D.count() << " ms\n";
+   // std::cout << "GPU Kernel Compute    : " << time_kernel_ms << " ms\n";
+   // std::cout << "Device-to-Host Memcpy : " << time_D2H.count() << " ms\n";
+   // std::cout << "Total GPU Time        : " << time_H2D.count() + time_kernel_ms + time_D2H.count() << " ms\n";
+
+   std::string filename = "CUDA_time.csv";
+
+   bool file_exists = std::filesystem::exists(filename);
+   std::ofstream output(filename, std::ios::app);
+   
+   if (!output.is_open()) {
+      std::cerr << "Error: Could not open CSV file for writing!" << std::endl;
+      return 1;
+   }
+
+   // Only write the CSV header if this is a brand new file
+   if (!file_exists) {
+      output << "NumCollisions,Time_H2D_ms,Time_Kernel_ms,Time_D2H_ms\n";
+   }
+   //output << "EventID,pT,Eta,Phi\n";
+   output << numCollision << "," << time_H2D.count() << "," << time_kernel_ms << "," << time_D2H.count() << "\n";
+
    output.close();
+
    
    
    return 0;
