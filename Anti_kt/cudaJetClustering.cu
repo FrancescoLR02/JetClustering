@@ -13,6 +13,8 @@
 
 
 const double R = 0.4;
+const float PI = 3.14159265f;
+const float TWO_PI = 6.28318530f;
 
 
 
@@ -102,9 +104,14 @@ __global__ void JetClusteringKernel(const float *pT, const float *eta, const flo
             double DeltaEta = s_eta[i] - s_eta[j];
 
             //periodic boundary condition for phi
-            const double PI = 3.14159265358979323846;
-            double DeltaPhi = remainder(s_phi[i] - s_phi[j], 2.0 * PI);
+            double DeltaPhi = s_phi[i] - s_phi[j];
 
+            if (DeltaPhi > PI) {
+               DeltaPhi -= TWO_PI;
+            } 
+            else if (DeltaPhi < -PI) {
+               DeltaPhi += TWO_PI;
+            }
 
             //Computing D_ij
             double DeltaR2 = (DeltaEta * DeltaEta) + (DeltaPhi * DeltaPhi);
@@ -178,10 +185,25 @@ __global__ void JetClusteringKernel(const float *pT, const float *eta, const flo
             double new_eta = (s_pT[best_i]*s_eta[best_i] + s_pT[best_j]*s_eta[best_j]) / new_pT;
             
             //PBC for phi
-            double dphi = remainder(s_phi[best_j] - s_phi[best_i], 2.0 * PI);
+            double dphi = s_phi[best_j] - s_phi[best_i];
+
+            if (dphi > PI) {
+               dphi -= TWO_PI;
+            } 
+            else if (dphi < -PI) {
+               dphi += TWO_PI;
+            }
+
+            //compute the new phi
             double new_phi = s_phi[best_i] + (s_pT[best_j] / new_pT) * dphi;
 
-            new_phi = remainder(new_phi, 2.0 * PI);
+            //Wrap the final averaged phi back to [-pi, pi]
+            if (new_phi > PI) {
+               new_phi -= TWO_PI;
+            } 
+            else if (new_phi <= -PI) {
+               new_phi += TWO_PI;
+            }
 
             //overwrite best_i with the new value
             s_pT[best_i] = new_pT;
@@ -234,13 +256,13 @@ int main(int argc, char* argv[]) {
    inFile.close();
 
 
-   // //Save jets in memory
-   // std::ofstream output("ReconstructedJet.csv");
-   // if (!output.is_open()) {
-   //    std::cerr << "Error: Could not open CSV file for writing!" << std::endl;
-   //    return 1;
-   // }
-   // output << "EventID,pT,Eta,Phi\n";
+   //Save jets in memory
+   std::ofstream output("ReconstructedJet.csv");
+   if (!output.is_open()) {
+      std::cerr << "Error: Could not open CSV file for writing!" << std::endl;
+      return 1;
+   }
+   output << "EventID,pT,Eta,Phi\n";
 
 
 
@@ -341,16 +363,16 @@ int main(int argc, char* argv[]) {
    cudaFree(dev_nPar_Jet);
 
 
-   // for(int event = 0; event < numCollision; ++event){
-   //    for(int i = 0; i < nPar_Jet[event]; ++i){
+   for(int event = 0; event < numCollision; ++event){
+      for(int i = 0; i < nPar_Jet[event]; ++i){
 
-   //       //Takes the jets in the vector 
-   //       int idx = (event * maxPar) + i;
-   //       output << event << "," << pT_Jet[idx] << "," << eta_Jet[idx] << "," << phi_Jet[idx] << "\n";
-   //    }
-   // }
+         //Takes the jets in the vector 
+         int idx = (event * maxPar) + i;
+         output << event << "," << pT_Jet[idx] << "," << eta_Jet[idx] << "," << phi_Jet[idx] << "\n";
+      }
+   }
 
-   // output.close();
+   output.close();
    
    
    return 0;
