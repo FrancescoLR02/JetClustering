@@ -26,6 +26,8 @@ struct DistanceTag{
 //Functions declaration
 double D_ij(int i, int j, const std::vector<Particle>& activeParticle);
 double D_iB(int i, const std::vector<Particle>& activeParticle);
+   Particle newParticle(const Particle &p1, const Particle &p2)
+
 
 
 int main(int argc, char* argv[]) {
@@ -137,26 +139,15 @@ int main(int argc, char* argv[]) {
             int pIdx_i = pp->i;
             int pIdx_j = pp->j;
 
-            double pT_i = activeParticles[pIdx_i].pT, pT_j = activeParticles[pIdx_j].pT;
-            double eta_i = activeParticles[pIdx_i].eta, eta_j = activeParticles[pIdx_j].eta;
-            double phi_i = activeParticles[pIdx_i].phi, phi_j = activeParticles[pIdx_j].phi;
+            Particle merged = newParticle(activeParticles[pIdx_i], activeParticles[pIdx_j]);
 
             int first = std::min(pIdx_i, pIdx_j);
             int second = std::max(pIdx_i, pIdx_j);
 
-            //add the four momenta
-            double pT = pT_i + pT_j;
-            double eta = (pT_i * eta_i + pT_j * eta_j)/pT;
-            double phi = (pT_i * phi_i + pT_j * phi_j)/pT;
-
-
             activeParticles.erase(activeParticles.begin() + second);
             activeParticles.erase(activeParticles.begin() + first);
 
-            Particle newParticle = {collision, pT, eta, phi};
-            activeParticles.push_back(newParticle);
-
-
+            activeParticles.push_back(merged);
          }
 
       }
@@ -209,6 +200,22 @@ int main(int argc, char* argv[]) {
       double d_iB = pow(p_i, -2);
 
       return d_iB;
+   }
+
+
+   Particle newParticle(const Particle &p1, const Particle &p2){
+
+      double tot_pT = p1.pT + p2.pT;
+
+      double eta = (p1.pT * p1.eta + p2.pT * p2.eta) / tot_pT;
+      
+      //account for periodicity of phi
+      double dphi = std::remainder(p2.phi - p1.phi, 2.0 * PI);
+      double phi = p1.phi + (p2.pT / tot_pT) * dphi;
+
+      phi = std::remainder(phi, 2.0 * PI);
+
+      return {tot_pT, eta, phi};
    }
 
 

@@ -8,6 +8,7 @@
 #include <chrono>
 
 const double R = 0.4;
+constexpr double PI = 3.14159265358979323846;
 
 
 //Structure of partice 
@@ -24,6 +25,8 @@ struct DistanceTag{
 //Functions declaration
 double D_ij(int i, int j, const std::vector<Particle>& activeParticle);
 double D_iB(int i, const std::vector<Particle>& activeParticle);
+Particle newParticle(const Particle &p1, const Particle &p2);
+
 
 
 int main(int argc, char* argv[]) {
@@ -48,7 +51,8 @@ int main(int argc, char* argv[]) {
 
    std::vector<float> data(totElements);
 
-   std::ifstream inFile("data.bin", std::ios::binary);
+   //load the binary file
+   std::ifstream inFile("../data.bin", std::ios::binary);
    if(!inFile){
       std::cerr << "Error opening the file " << std::endl;
       return 1; 
@@ -57,19 +61,11 @@ int main(int argc, char* argv[]) {
    inFile.read(reinterpret_cast<char*>(data.data()), totElements * sizeof(float));
    inFile.close();
 
-   int maxEventsLoaded = numEvents; 
-   int eventsAnalyzed = 0;          
-   int collision = 0; 
-
-   //Loop of collisions
-   //for(int collision = 0; collision < numEvents; ++collision){
-   while(eventsAnalyzed < maxEventsLoaded){
+   //outer loop: collisions
+   for(int collision = 0; collision < numEvents; ++collision){
 
       //Retrieve the correct row 
       float *ptr = &data[collision * cols];
-
-      collision++;
-
 
       //Jets and Active particles vector
       std::vector<Particle> activeParticles;
@@ -153,32 +149,19 @@ int main(int argc, char* argv[]) {
             int pIdx_i = pp->i;
             int pIdx_j = pp->j;
 
-            double pT_i = activeParticles[pIdx_i].pT, pT_j = activeParticles[pIdx_j].pT;
-            double eta_i = activeParticles[pIdx_i].eta, eta_j = activeParticles[pIdx_j].eta;
-            double phi_i = activeParticles[pIdx_i].phi, phi_j = activeParticles[pIdx_j].phi;
+            Particle merged = newParticle(activeParticles[pIdx_i], activeParticles[pIdx_j]);
 
             int first = std::min(pIdx_i, pIdx_j);
             int second = std::max(pIdx_i, pIdx_j);
-
-            //add the four momenta
-            double pT = pT_i + pT_j;
-            double eta = (pT_i * eta_i + pT_j * eta_j)/pT;
-            double phi = (pT_i * phi_i + pT_j * phi_j)/pT;
 
 
             activeParticles.erase(activeParticles.begin() + second);
             activeParticles.erase(activeParticles.begin() + first);
 
-            Particle newParticle = {pT, eta, phi};
-            activeParticles.push_back(newParticle);
-
-
+            activeParticles.push_back(merged);
          }
 
       }
-
-      eventsAnalyzed++;
-
    }
    
    
@@ -192,9 +175,12 @@ int main(int argc, char* argv[]) {
       double p_i = activeParticles[i].pT, p_j = activeParticles[j].pT;
       double eta_i = activeParticles[i].eta, eta_j = activeParticles[j].eta;
       double phi_i = activeParticles[i].phi, phi_j = activeParticles[j].phi;
+
+      //account for the periodicity of phi: wrapped Delta phi: result in [-pi, pi]
+      double dphi = std::remainder(phi_i - phi_j, 2.0 * PI);
       
       //Compute deltaR squared 
-      double DeltaR2 = pow(eta_i - eta_j, 2) + pow(phi_i - phi_j, 2);
+      double DeltaR2 = pow(eta_i - eta_j, 2) + pow(dphi, 2);
       
       double d_ij = std::min(pow(p_i, -2), pow(p_j, -2))* DeltaR2 /pow(R, 2);
       
@@ -207,6 +193,21 @@ int main(int argc, char* argv[]) {
       double d_iB = pow(p_i, -2);
 
       return d_iB;
+   }
+
+   Particle newParticle(const Particle &p1, const Particle &p2){
+
+      double tot_pT = p1.pT + p2.pT;
+
+      double eta = (p1.pT * p1.eta + p2.pT * p2.eta) / tot_pT;
+      
+      //account for periodicity of phi
+      double dphi = std::remainder(p2.phi - p1.phi, 2.0 * PI);
+      double phi = p1.phi + (p2.pT / tot_pT) * dphi;
+
+      phi = std::remainder(phi, 2.0 * PI);
+
+      return {tot_pT, eta, phi};
    }
 
 
