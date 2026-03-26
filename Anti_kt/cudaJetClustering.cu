@@ -13,8 +13,8 @@
 
 
 const double R = 0.4;
-const float PI = 3.14159265f;
-const float TWO_PI = 6.28318530f;
+//const float PI = 3.14159265f;
+//const float TWO_PI = 6.28318530f;
 
 
 

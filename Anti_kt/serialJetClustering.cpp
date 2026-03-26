@@ -64,6 +64,8 @@ int main(int argc, char* argv[]) {
    //outer loop: collisions
    for(int collision = 0; collision < numEvents; ++collision){
 
+      //std::cout << collision << std::endl;
+
       //Retrieve the correct row 
       float *ptr = &data[collision * cols];
 
