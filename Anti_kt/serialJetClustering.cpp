@@ -87,6 +87,7 @@ int main(int argc, char* argv[]) {
          else continue;
       }
 
+      //Iterative steps
       while (activeParticles.size() != 0){
          
          //Euclidean Distance calculation

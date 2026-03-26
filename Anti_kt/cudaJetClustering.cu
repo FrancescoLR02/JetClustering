@@ -106,12 +106,12 @@ __global__ void JetClusteringKernel(const float *pT, const float *eta, const flo
             //periodic boundary condition for phi
             double DeltaPhi = s_phi[i] - s_phi[j];
 
-            if (DeltaPhi > PI) {
-               DeltaPhi -= TWO_PI;
-            } 
-            else if (DeltaPhi < -PI) {
-               DeltaPhi += TWO_PI;
-            }
+            // if (DeltaPhi > PI) {
+            //    DeltaPhi -= TWO_PI;
+            // } 
+            // else if (DeltaPhi < -PI) {
+            //    DeltaPhi += TWO_PI;
+            // }
 
             //Computing D_ij
             double DeltaR2 = (DeltaEta * DeltaEta) + (DeltaPhi * DeltaPhi);
@@ -187,23 +187,23 @@ __global__ void JetClusteringKernel(const float *pT, const float *eta, const flo
             //PBC for phi
             double dphi = s_phi[best_j] - s_phi[best_i];
 
-            if (dphi > PI) {
-               dphi -= TWO_PI;
-            } 
-            else if (dphi < -PI) {
-               dphi += TWO_PI;
-            }
+            // if (dphi > PI) {
+            //    dphi -= TWO_PI;
+            // } 
+            // else if (dphi < -PI) {
+            //    dphi += TWO_PI;
+            // }
 
             //compute the new phi
             double new_phi = s_phi[best_i] + (s_pT[best_j] / new_pT) * dphi;
 
             //Wrap the final averaged phi back to [-pi, pi]
-            if (new_phi > PI) {
-               new_phi -= TWO_PI;
-            } 
-            else if (new_phi <= -PI) {
-               new_phi += TWO_PI;
-            }
+            // if (new_phi > PI) {
+            //    new_phi -= TWO_PI;
+            // } 
+            // else if (new_phi <= -PI) {
+            //    new_phi += TWO_PI;
+            // }
 
             //overwrite best_i with the new value
             s_pT[best_i] = new_pT;
