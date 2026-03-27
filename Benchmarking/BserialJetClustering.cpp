@@ -207,12 +207,12 @@ int main(int argc, char* argv[]) {
 
       }
 
-         auto Iend = std::chrono::high_resolution_clock::now();
-         std::chrono::duration<double> elapsed = Iend - Istart;
+      auto Iend = std::chrono::high_resolution_clock::now();
+      std::chrono::duration<double> elapsed = Iend - Istart;
 
-         CollisionEvent = elapsed.count();
+      CollisionEvent = elapsed.count();
 
-         Collision << CollisionEvent << "," << Distance << "," << Minimum << "," << JetIdentification << "\n";
+      Collision << CollisionEvent << "," << Distance << "," << Minimum << "," << JetIdentification << "\n";
 
    }
    
