@@ -37,23 +37,14 @@ double D_iB(const Particle& p_i);
 int main(int argc, char* argv[]) {
 
    int numEvents;
-   int nColl;
-   int totalEvents = 100000;
-
    //Default value
-   if (argc < 3) {
-      numEvents = 1000;
-      nColl = -1;
-   }
-   else {
-      numEvents = std::stod(argv[1]);
-      nColl = std::stod(argv[2]);
-   }
+   if (argc < 2) numEvents = 1000;
+   else numEvents = std::stod(argv[1]);
 
 
    //Read input file
    const int cols = 2101;
-   const size_t totElements = (size_t)totalEvents * cols;
+   const size_t totElements = (size_t)numEvents * cols;
 
    std::vector<float> data(totElements);
 
@@ -94,14 +85,6 @@ int main(int argc, char* argv[]) {
          
          //Fill the activeparticle structure
          activeParticles.push_back({(int)i, (double)ptr[i], (double)ptr[i+1], (double)ptr[i+2], true});
-      }
-
-      //Verifying the complexity of the algorithm
-      if(nColl != -1){
-         if(activeParticles.size() > nColl){
-            activeParticles.resize(nColl);
-         }
-         else continue;
       }
 
       int activeCount = activeParticles.size();

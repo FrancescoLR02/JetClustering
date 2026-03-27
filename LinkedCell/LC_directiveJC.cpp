@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
 
    std::vector<float> data(totElements);
 
-   std::ifstream inFile("../data.bin", std::ios::binary);
+   std::ifstream inFile("data.bin", std::ios::binary);
    if(!inFile){
       std::cerr << "Error opening the file " << std::endl;
       return 1; 
