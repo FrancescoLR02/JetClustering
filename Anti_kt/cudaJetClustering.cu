@@ -13,8 +13,8 @@
 
 
 const double R = 0.4;
-//const float PI = 3.14159265f;
-//const float TWO_PI = 6.28318530f;
+const float PI = 3.14159265f;
+const float TWO_PI = 6.28318530f;
 
 
 
@@ -36,10 +36,10 @@ __global__ void JetClusteringKernel(const float *pT, const float *eta, const flo
       activeParticles = nPar[idx];
    }
 
-   //synch threads -> wait for every thread to copy in the shared memory
+   //Thread 0 wrtes, all the other need to read activeParticles
    __syncthreads();
 
-   //Define shared memory: from global memory to cache 
+   //fefine shared memory: from global memory to cache 
    __shared__ float s_pT[700];
    __shared__ float s_eta[700];
    __shared__ float s_phi[700];
@@ -54,21 +54,18 @@ __global__ void JetClusteringKernel(const float *pT, const float *eta, const flo
    //synch threads -> wait for every thread to copy in the shared memory
    __syncthreads();
 
-      //Compare the minimum distances to find the absolute minima
+   //Define arrya to compare the minimum distances to find the absolute minima
    __shared__ double s_minDist[128];
    __shared__ int s_minIdx_i[128];
    __shared__ int s_minIdx_j[128];
 
-   __syncthreads();
-
    
    //Define memory space for found jets
-   __shared__ int foundJets;
+   int foundJets;
    if(threadIdx.x == 0) foundJets = 0;
-   __syncthreads();
 
    //GRID STRIDE LOOP
-   //The idea is the every thread takes a subset of events, compute the distances and find the minimum in the subset
+   //The idea is the every thread takes a subset of products of collisino, compute the distances and find the minimum in the subset
    //Then at the end all the threads will hold their minimum. The abolute minima is found applying parallel reduction
    while(activeParticles > 0){
 
@@ -106,12 +103,12 @@ __global__ void JetClusteringKernel(const float *pT, const float *eta, const flo
             //periodic boundary condition for phi
             double DeltaPhi = s_phi[i] - s_phi[j];
 
-            // if (DeltaPhi > PI) {
-            //    DeltaPhi -= TWO_PI;
-            // } 
-            // else if (DeltaPhi < -PI) {
-            //    DeltaPhi += TWO_PI;
-            // }
+            if (DeltaPhi > PI) {
+               DeltaPhi -= TWO_PI;
+            } 
+            else if (DeltaPhi < -PI) {
+               DeltaPhi += TWO_PI;
+            }
 
             //Computing D_ij
             double DeltaR2 = (DeltaEta * DeltaEta) + (DeltaPhi * DeltaPhi);
@@ -129,6 +126,7 @@ __global__ void JetClusteringKernel(const float *pT, const float *eta, const flo
       s_minIdx_i[threadIdx.x] = minIdx_i;
       s_minIdx_j[threadIdx.x] = minIdx_j;
 
+      //wait for all threads to compute their "local" minima
       __syncthreads();
 
       //Apply parallel reduction to find the sbolute minimum
@@ -187,23 +185,23 @@ __global__ void JetClusteringKernel(const float *pT, const float *eta, const flo
             //PBC for phi
             double dphi = s_phi[best_j] - s_phi[best_i];
 
-            // if (dphi > PI) {
-            //    dphi -= TWO_PI;
-            // } 
-            // else if (dphi < -PI) {
-            //    dphi += TWO_PI;
-            // }
+            if (dphi > PI) {
+               dphi -= TWO_PI;
+            } 
+            else if (dphi < -PI) {
+               dphi += TWO_PI;
+            }
 
             //compute the new phi
             double new_phi = s_phi[best_i] + (s_pT[best_j] / new_pT) * dphi;
 
             //Wrap the final averaged phi back to [-pi, pi]
-            // if (new_phi > PI) {
-            //    new_phi -= TWO_PI;
-            // } 
-            // else if (new_phi <= -PI) {
-            //    new_phi += TWO_PI;
-            // }
+            if (new_phi > PI) {
+               new_phi -= TWO_PI;
+            } 
+            else if (new_phi <= -PI) {
+               new_phi += TWO_PI;
+            }
 
             //overwrite best_i with the new value
             s_pT[best_i] = new_pT;
@@ -342,7 +340,6 @@ int main(int argc, char* argv[]) {
    int nThreadsPerBlock = THREADS_PER_BLOCK;
 
    //Kernel
-
    JetClusteringKernel<<<nBlocks, nThreadsPerBlock>>>(dev_pT, dev_eta, dev_phi, dev_nPar, 
                                                       dev_pT_Jet, dev_eta_Jet, dev_phi_Jet, dev_nPar_Jet, maxPar);
 

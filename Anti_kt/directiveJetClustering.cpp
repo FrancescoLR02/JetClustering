@@ -154,8 +154,7 @@ int main(int argc, char* argv[]) {
 
       allResults[collision] = Jet;
 
-      //std::cout << "Event " << collision << " finished! Found " << Jet.size() << " Jets." << std::endl;
-
+      std::cout << "Event " << collision << " Found " << Jet.size() << " Jets" << std::endl;
    }
 
    // //Save jets in memory
